@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Formatos IA - Remesas y Files de Desembolso</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#1e1b4b',
+            },
+            bcp: {
+              navy: '#002A54',
+              orange: '#FF7800',
+              accent: '#0A3B74'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .table-email-preview th, .table-email-preview td {
+      border: 1px solid #1f2937;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+    .badge-rule {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation & Corporate Header -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-amber-500 flex items-center justify-center font-bold text-white shadow-md">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Convenios Públicos</h1>
+              <span class="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-0.5 rounded-full border border-indigo-400/30 font-medium">Lector IA v13.10</span>
+            </div>
+            <p class="text-xs text-slate-400 hidden sm:block">Generador Estricto & Validador de Correos de Remesas y Files</p>
+          </div>
+        </div>
+
+        <!-- Compliance Reminder Badge -->
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center text-xs bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 px-3 py-1.5 rounded-lg font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+            Reglas IA Activas (Guión + 3 Tipos de Crédito)
+          </span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="flex space-x-2 overflow-x-auto py-2 border-t border-slate-800 text-sm font-medium">
+        <button onclick="switchTab('remesa')" id="tab-btn-remesa" class="tab-button flex items-center space-x-2 px-4 py-2 rounded-lg text-white bg-indigo-600 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          <span>1. Generador de Remesa</span>
+        </button>
+        <button onclick="switchTab('file')" id="tab-btn-file" class="tab-button flex items-center space-x-2 px-4 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>2. File de Desembolso</span>
+        </button>
+        <button onclick="switchTab('auditor')" id="tab-btn-auditor" class="tab-button flex items-center space-x-2 px-4 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+          <span>3. Auditor / Validador Rápido</span>
+        </button>
+        <button onclick="switchTab('casos')" id="tab-btn-casos" class="tab-button flex items-center space-x-2 px-4 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <span>4. Catálogo de Errores Reales</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Notification Toast Container -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-2xl border border-slate-700">
+    <span id="toast-icon" class="text-emerald-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    </span>
+    <span id="toast-msg" class="text-sm font-medium">Mensaje copiado con éxito</span>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: GENERADOR DE REMESA                 -->
+    <!-- ========================================== -->
+    <div id="view-remesa" class="tab-view block space-y-6">
+      
+      <!-- Top banner tips -->
+      <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-start space-x-3">
+          <div class="bg-indigo-600 text-white p-2 rounded-lg mt-0.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-indigo-950">Reglas críticas para lectura del motor IA en Remesas:</h2>
+            <p class="text-xs text-indigo-800 mt-0.5">1) <strong>Tipo de Crédito:</strong> Solo 3 opciones permitidas (Compra de deuda, Ampliación, Libre disponibilidad). Jamás usar "Subrogado" ni "Línea nueva".</p>
+            <p class="text-xs text-indigo-800">2) <strong>Comentarios:</strong> Si es nuevo debe decir <code>0 - Nuevo</code>. Si compra deuda: <code>[Código de boleta] – [Entidad]</code>.</p>
+            <p class="text-xs text-indigo-800">3) <strong>Adjunto:</strong> SOLO UN archivo PDF. Excedentes o cronogramas van fuera de la tabla en el texto.</p>
+          </div>
+        </div>
+        <button onclick="fillExampleRemesa()" class="px-3 py-1.5 bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap transition">
+          Cargar Datos de Ejemplo
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left: Form inputs -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+              <span>Datos de la Remesa</span>
+            </h3>
+            <span class="text-xs text-slate-400">Todos los campos sincronizan al instante</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Zona -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Zona / Plaza <span class="text-rose-500">*</span></label>
+              <select id="remesa-zona" onchange="updateRemesaLive()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <option value="Lima">Lima</option>
+                <option value="Provincia">Provincia</option>
+                <option value="Chimbote">Chimbote (Provincia)</option>
+                <option value="Arequipa">Arequipa (Provincia)</option>
+                <option value="Trujillo">Trujillo (Provincia)</option>
+                <option value="Cusco">Cusco (Provincia)</option>
+                <option value="Piura">Piura (Provincia)</option>
+              </select>
+            </div>
+
+            <!-- Convenio -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Convenio (Abreviatura oficial) <span class="text-rose-500">*</span></label>
+              <select id="remesa-convenio" onchange="updateRemesaLive()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium">
+                <option value="PNP">PNP (Policía Nacional del Perú)</option>
+                <option value="RS PACIFICO NORTE">RS PACIFICO NORTE (Red de Salud Pacífico Norte)</option>
+                <option value="FAP">FAP (Fuerza Aérea del Perú)</option>
+                <option value="DIRIS LC">DIRIS LC (Dirección de Redes Lima Centro)</option>
+                <option value="MINSA">MINSA</option>
+                <option value="ESSALUD">ESSALUD</option>
+                <option value="EJERCITO">EJERCITO</option>
+                <option value="MARINA">MARINA</option>
+                <option value="OTRO">OTRO (Personalizado)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Convenio custom si selecciona otro -->
+          <div id="remesa-convenio-custom-wrap" class="hidden">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Abreviatura Personalizada:</label>
+            <input type="text" id="remesa-convenio-custom" oninput="updateRemesaLive()" placeholder="Ej. INPE, PODER JUDICIAL" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 uppercase">
+          </div>
+
+          <!-- Cliente y DNI -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Apellidos y Nombres (CLIENTE) <span class="text-rose-500">*</span></label>
+              <input type="text" id="remesa-cliente" oninput="updateRemesaLive()" placeholder="GOMEZ MALPICA FRANCIS ENRIQUE" value="GOMEZ MALPICA FRANCIS ENRIQUE" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 uppercase font-semibold text-slate-800">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">DNI (DOC) <span class="text-rose-500">*</span></label>
+              <input type="text" id="remesa-doc" maxlength="8" oninput="validateDNI(this); updateRemesaLive();" placeholder="70227700" value="70227700" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-mono font-bold">
+              <p id="remesa-dni-warn" class="text-[10px] text-amber-600 hidden mt-1">Debe tener exactamente 8 dígitos.</p>
+            </div>
+          </div>
+
+          <!-- Monto, Plazo, Cuota -->
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">MONTO (S/) <span class="text-rose-500">*</span></label>
+              <input type="text" id="remesa-monto" oninput="updateRemesaLive()" placeholder="83,000" value="83,000" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">PLAZO (Meses) <span class="text-rose-500">*</span></label>
+              <input type="number" id="remesa-plazo" oninput="updateRemesaLive()" placeholder="72" value="72" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">CUOTA (S/) <span class="text-rose-500">*</span></label>
+              <input type="text" id="remesa-cuota" oninput="updateRemesaLive()" placeholder="1,634.14" value="1,634.14" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-semibold">
+            </div>
+          </div>
+
+          <!-- Tipo de Crédito - Estricto 3 opciones -->
+          <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
+                <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0118 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                <span>TIPO DE CRÉDITO (Regla Estricta: Solo 3 Opciones) <span class="text-rose-500">*</span></span>
+              </label>
+              <span class="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-mono font-bold">REGLA IA</span>
+            </div>
+            <select id="remesa-tipo" onchange="handleTipoCreditoChange(); updateRemesaLive();" class="w-full text-sm bg-white border border-amber-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 font-bold text-slate-900">
+              <option value="COMPRA DE DEUDA">COMPRA DE DEUDA</option>
+              <option value="AMPLIACIÓN">AMPLIACIÓN</option>
+              <option value="LIBRE DISPONIBILIDAD">LIBRE DISPONIBILIDAD</option>
+            </select>
+            <p class="text-[11px] text-amber-800 mt-1">
+              ⚠️ <strong>Prohibido por la IA:</strong> "SUBROGADO", "PRÉSTAMO NUEVO", "LINEA NUEVA". Siempre use una de las 3 oficiales.
+            </p>
+          </div>
+
+          <!-- Seguro -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">SEGURO <span class="text-rose-500">*</span></label>
+              <select id="remesa-seguro" onchange="updateRemesaLive()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-medium">
+                <option value="CONVENCIONAL">CONVENCIONAL</option>
+                <option value="OPTATIVO">OPTATIVO</option>
+                <option value="SIN SEGURO">SIN SEGURO</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">VENDEDOR <span class="text-rose-500">*</span></label>
+              <input type="text" id="remesa-vendedor" oninput="updateRemesaLive()" placeholder="ROBERTO HUAYTA" value="ROBERTO HUAYTA" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 uppercase font-semibold">
+            </div>
+          </div>
+
+          <!-- Comentarios con Botones de Inserción Rápida -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-slate-700">COMENTARIOS <span class="text-rose-500">*</span></label>
+              <div class="flex space-x-1.5">
+                <button type="button" onclick="setComentario('0 - Nuevo')" class="text-[11px] bg-slate-100 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded border border-slate-300 transition">
+                  ⚡ Poner "0 - Nuevo"
+                </button>
+                <button type="button" onclick="setComentario('110 - BANCO DE COMERCIO + 500 - BCO DE LA NACION')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded border border-slate-300 transition">
+                  Ej. Compra Deuda
+                </button>
+              </div>
+            </div>
+            <input type="text" id="remesa-comentarios" oninput="updateRemesaLive()" placeholder="110 - BANCO DE COMERCIO + 500 - BCO DE LA NACION" value="110 - BANCO DE COMERCIO + 500 - BCO DE LA NACION" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800">
+            <p class="text-[11px] text-slate-500 mt-1">Formato: <code>[Código en boleta] – [Entidad]</code>. Si el crédito es nuevo o sin compras previas, debe ser exactamente <code>0 - Nuevo</code>.</p>
+          </div>
+
+          <!-- Detalles adicionales fuera de la tabla -->
+          <div class="border-t border-slate-100 pt-3">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Detalles Adicionales (FUERA de la tabla):</label>
+            <input type="text" id="remesa-adicionales" oninput="updateRemesaLive()" placeholder="Ej. Se adjunta cronograma de pagos para sincerar cuota." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 text-slate-700">
+            <p class="text-[11px] text-slate-500 mt-1">La IA ignorará notas si están dentro de la tabla. Deben ir en el cuerpo de texto.</p>
+          </div>
+
+        </div>
+
+        <!-- Right: Live Preview & Copy Hub -->
+        <div class="lg:col-span-6 space-y-5">
+          
+          <!-- Asunto Generator Card -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold tracking-wide text-slate-500 uppercase">Asunto Obligatorio para la IA</span>
+              <button onclick="copyToClipboard(document.getElementById('remesa-subject-preview').innerText, 'Asunto de remesa')" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <span>Copiar Asunto</span>
+              </button>
+            </div>
+            <div class="bg-slate-900 text-amber-300 font-mono text-sm p-3.5 rounded-xl break-all select-all border border-slate-800 flex items-center justify-between">
+              <span id="remesa-subject-preview">Remesa – Lima – PNP – GOMEZ MALPICA FRANCIS ENRIQUE – 70227700</span>
+            </div>
+            <div class="flex items-center space-x-2 text-[11px] text-slate-500">
+              <span class="text-emerald-600 font-bold">✓ Formato estricto:</span>
+              <code>Remesa – [Lima o Provincia] – [Convenio] – [Cliente] – [DNI]</code>
+            </div>
+          </div>
+
+          <!-- Body / Table Preview Card -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold tracking-wide text-slate-500 uppercase">Vista Previa del Correo (Outlook)</span>
+              <div class="flex items-center space-x-2">
+                <button onclick="copyRichTable('remesa-table-container')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 shadow transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                  <span>Copiar Tabla Outlook</span>
+                </button>
+                <button onclick="copyFullRemesaEmail()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 shadow transition">
+                  <span>Copiar Correo Completo</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Simulated Email Container -->
+            <div id="remesa-email-full" class="bg-slate-50/70 p-5 rounded-xl border border-slate-200 text-sm space-y-3 font-sans">
+              <p class="text-slate-700">Buen día,</p>
+              <p class="text-slate-700">Estimados, por favor su apoyo con solicitar remesa de cliente en mención.</p>
+              <p class="text-slate-700 font-medium">Se adjunta documentación y detalle del crédito:</p>
+
+              <!-- Dynamic HTML Table directly parseable by Outlook -->
+              <div id="remesa-table-container" class="my-3 overflow-x-auto">
+                <table style="border-collapse: collapse; width: 100%; border: 1.5px solid #000000; font-family: Arial, sans-serif; font-size: 13px;">
+                  <tbody>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; width: 35%; background-color: #ffffff;">CLIENTE</td>
+                      <td id="td-remesa-cliente" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">GOMEZ MALPICA FRANCIS ENRIQUE</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">DOC</td>
+                      <td id="td-remesa-doc" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; text-align: right; background-color: #ffffff;">70227700</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">MONTO</td>
+                      <td id="td-remesa-monto" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; text-align: right; background-color: #ffffff;">S/ 83,000</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">PLAZO</td>
+                      <td id="td-remesa-plazo" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; text-align: right; background-color: #ffffff;">72</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">CUOTA</td>
+                      <td id="td-remesa-cuota" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; text-align: right; background-color: #ffffff;">S/ 1,634.14</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">CONVENIO</td>
+                      <td id="td-remesa-convenio" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">PNP</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">TIPO DE CRÉDITO</td>
+                      <td id="td-remesa-tipo" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">COMPRA DE DEUDA</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">SEGURO</td>
+                      <td id="td-remesa-seguro" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">CONVENCIONAL</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">COMENTARIOS</td>
+                      <td id="td-remesa-comentarios" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">110 - BANCO DE COMERCIO + 500 - BCO DE LA NACION</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">VENDEDOR</td>
+                      <td id="td-remesa-vendedor" style="border: 1px solid #000000; padding: 6px 12px; font-weight: bold; background-color: #ffffff;">ROBERTO HUAYTA</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Outside Table Note -->
+              <div id="remesa-extra-note-wrap" class="pt-2 text-slate-700 italic border-t border-slate-200">
+                <span id="remesa-extra-note"></span>
+              </div>
+
+              <div class="text-xs text-slate-500 pt-2 border-t border-slate-200">
+                <span class="font-bold text-slate-700">Archivos adjuntos reglamentarios:</span>
+                <div class="mt-1 flex items-center space-x-2">
+                  <span class="inline-flex items-center bg-rose-100 text-rose-800 text-xs px-2.5 py-1 rounded-md font-medium border border-rose-200">
+                    <svg class="w-3.5 h-3.5 mr-1 text-rose-600" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path></svg>
+                    SOLO 1 archivo PDF a validar (La IA solo procesará 1 PDF)
+                  </span>
+                  <span class="text-[11px] text-slate-500">+ Excel de sustento (opcional)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 2: GENERADOR DE FILE DE DESEMBOLSO     -->
+    <!-- ========================================== -->
+    <div id="view-file" class="tab-view hidden space-y-6">
+      
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-start space-x-3">
+          <div class="bg-amber-600 text-white p-2 rounded-lg mt-0.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-amber-950">Reglas críticas de IA para File de Desembolso:</h2>
+            <p class="text-xs text-amber-800 mt-0.5">1) <strong>Separador Obligatorio:</strong> La IA exige <code>–</code> (guión con espacio). Está TERMINANTEMENTE PROHIBIDO usar barras <code>//</code>.</p>
+            <p class="text-xs text-amber-800">2) <strong>2 PDFs Adjuntos:</strong> El archivo de Salesforce DEBE incluir <code>SF</code> en su nombre. El de fiscalización DEBE iniciar con la palabra <code>FILE</code>.</p>
+            <p class="text-xs text-amber-800">3) <strong>Excepciones adicionales:</strong> Deben nombrarse estrictamente <code>EXCEPCION 1 [Nombre]</code>, <code>EXCEPCION 2 [Nombre]</code>.</p>
+          </div>
+        </div>
+        <button onclick="fillExampleFile()" class="px-3 py-1.5 bg-white border border-amber-300 text-amber-800 hover:bg-amber-50 rounded-lg text-xs font-semibold shadow-sm whitespace-nowrap transition">
+          Cargar Ejemplo Real
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Form left -->
+        <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              <span>Datos del File de Desembolso</span>
+            </h3>
+            <span class="text-xs text-slate-400">Verificación estricta de nombres</span>
+          </div>
+
+          <!-- Zona y Convenio -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Zona / Ciudad <span class="text-rose-500">*</span></label>
+              <select id="file-zona" onchange="updateFileLive()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none font-medium">
+                <option value="Provincia">Provincia</option>
+                <option value="LIMA">LIMA</option>
+                <option value="Arequipa">Arequipa</option>
+                <option value="Trujillo">Trujillo</option>
+                <option value="Chimbote">Chimbote</option>
+                <option value="Cusco">Cusco</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Convenio <span class="text-rose-500">*</span></label>
+              <select id="file-convenio" onchange="updateFileLive()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none font-medium">
+                <option value="PNP">PNP</option>
+                <option value="RS PACIFICO NORTE">RS PACIFICO NORTE</option>
+                <option value="FAP">FAP</option>
+                <option value="DIRIS LC">DIRIS LC</option>
+                <option value="MINSA">MINSA</option>
+                <option value="ESSALUD">ESSALUD</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Cliente y DNI -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nombre Completo del Cliente <span class="text-rose-500">*</span></label>
+              <input type="text" id="file-cliente" oninput="updateFileLive()" placeholder="RAFAEL RISI CERVANTES" value="RAFAEL RISI CERVANTES" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 uppercase font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">DNI del Cliente <span class="text-rose-500">*</span></label>
+              <input type="text" id="file-doc" maxlength="8" oninput="validateDNI(this); updateFileLive();" placeholder="48007183" value="48007183" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 font-mono font-bold">
+            </div>
+          </div>
+
+          <!-- Attachments Naming Configuration -->
+          <div class="border-t border-slate-100 pt-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600">Archivos Adjuntos Requeridos (2 PDFs)</h4>
+              <span class="text-[11px] text-amber-700 bg-amber-100 px-2 py-0.5 rounded font-medium">Regla Salesforce & Fiscalización</span>
+            </div>
+
+            <!-- PDF 1: Salesforce -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700 flex items-center space-x-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>1. PDF para Salesforce</span>
+                </span>
+                <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono">Debe contener "SF"</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input type="text" id="file-pdf-sf" readonly class="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-800">
+                <button onclick="copyToClipboard(document.getElementById('file-pdf-sf').value, 'Nombre PDF Salesforce')" class="px-2.5 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-medium transition" title="Copiar nombre">
+                  📋
+                </button>
+              </div>
+            </div>
+
+            <!-- PDF 2: Fiscalización -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700 flex items-center space-x-1">
+                  <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  <span>2. PDF para Fiscalización</span>
+                </span>
+                <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono">Debe iniciar con "FILE"</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input type="text" id="file-pdf-fisc" readonly class="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-800">
+                <button onclick="copyToClipboard(document.getElementById('file-pdf-fisc').value, 'Nombre PDF Fiscalización')" class="px-2.5 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-medium transition" title="Copiar nombre">
+                  📋
+                </button>
+              </div>
+            </div>
+
+            <!-- Excepciones Adicionales -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">3. Excepciones Adicionales (Opcional)</span>
+                <button type="button" onclick="addExcepcionInput()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold">
+                  + Agregar Excepción
+                </button>
+              </div>
+              <div id="excepciones-list" class="space-y-2 text-xs">
+                <!-- Injected dynamically -->
+              </div>
+              <p class="text-[11px] text-slate-500">Formato estricto para excepciones: <code>EXCEPCION 1 [Detalle].pdf</code>, <code>EXCEPCION 2 [Detalle].pdf</code></p>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Right: Preview and Comparison -->
+        <div class="lg:col-span-6 space-y-5">
+          
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold tracking-wide text-slate-500 uppercase">Asunto Estricto Generado para la IA</span>
+              <button onclick="copyToClipboard(document.getElementById('file-subject-preview').innerText, 'Asunto de File de Desembolso')" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <span>Copiar Asunto</span>
+              </button>
+            </div>
+
+            <div class="bg-slate-900 text-emerald-400 font-mono text-sm p-4 rounded-xl break-all select-all border border-slate-800 flex items-center justify-between">
+              <span id="file-subject-preview">File Desembolso – Provincia – PNP – RAFAEL RISI CERVANTES – 48007183</span>
+            </div>
+
+            <!-- Comparison cards: Correct vs Wrong (From Slide) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
+                <div class="flex items-center space-x-1 text-emerald-800 font-bold text-xs">
+                  <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                  <span>FORMATO CORRECTO</span>
+                </div>
+                <p class="text-[11px] text-emerald-900 font-mono">File Desembolso – Arequipa – PNP – Rafael Risi Cervantes – 48007183</p>
+                <p class="text-[10px] text-emerald-700">✓ La IA diferencia los campos usando el GUIÓN (<code>–</code>).</p>
+              </div>
+
+              <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-1">
+                <div class="flex items-center space-x-1 text-rose-800 font-bold text-xs">
+                  <svg class="w-4 h-4 text-rose-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                  <span>FORMATO INCORRECTO (ERROR REAL)</span>
+                </div>
+                <p class="text-[11px] text-rose-900 font-mono">File // Desembolso // Provincia // PNP // Rafael Risi... // DNI: 48007183</p>
+                <p class="text-[10px] text-rose-700">✗ El uso de slashes dobles o prefijo 'DNI:' corrompe el parser.</p>
+              </div>
+            </div>
+
+            <!-- Email Body Builder -->
+            <div class="border-t border-slate-100 pt-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Cuerpo Estándar Sugerido</span>
+                <button onclick="copyToClipboard(document.getElementById('file-body-preview').innerText, 'Cuerpo de correo')" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold">
+                  Copiar Cuerpo
+                </button>
+              </div>
+              <div id="file-body-preview" class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 space-y-2 font-sans">
+                <p>Estimados buenas tardes,</p>
+                <p>Se solicita la revisión y proceso de desembolso correspondiente al cliente en mención.</p>
+                <p>Se adjuntan los 2 archivos correspondientes debidamente validados para su fiscalización e ingreso en Salesforce.</p>
+                <p>Quedo atento a sus comentarios. Saludos cordiales.</p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 3: AUDITOR / VALIDADOR RÁPIDO         -->
+    <!-- ========================================== -->
+    <div id="view-auditor" class="tab-view hidden space-y-6">
+      
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>Auditor Inteligente de Correos y Asuntos</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">Pega aquí el asunto o el texto de un correo que vas a enviar. La herramienta detectará patrones prohibidos por el motor de IA y te entregará el formato corregido al instante.</p>
+        </div>
+
+        <!-- Auditor Input Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-6 space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-700">Texto / Asunto a Inspeccionar:</label>
+              <div class="flex space-x-2">
+                <button onclick="loadBadAuditSample(1)" class="text-[11px] bg-rose-50 text-rose-700 hover:bg-rose-100 px-2 py-1 rounded border border-rose-200 transition">
+                  Cargar Caso Slashes (//)
+                </button>
+                <button onclick="loadBadAuditSample(2)" class="text-[11px] bg-rose-50 text-rose-700 hover:bg-rose-100 px-2 py-1 rounded border border-rose-200 transition">
+                  Cargar Caso "SUBROGADO"
+                </button>
+              </div>
+            </div>
+
+            <textarea id="audit-input" rows="8" oninput="auditEmailContent()" placeholder="Pega aquí el asunto o texto... Ejemplo:&#10;RE: [EXTERNO]FILE DESEMBOLSO // PROVINCIA // PNP // SANCHEZ AREVALO GENI JHOEL // DNI: 70901798&#10;Tipo de crédito: SUBROGADO&#10;Comentarios: LINEA NUEVA" class="w-full text-xs font-mono bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 text-slate-800 leading-relaxed"></textarea>
+
+            <!-- Attachment File Auditor Input -->
+            <div class="border-t border-slate-100 pt-3">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Auditor de Nombre de Archivos Adjuntos (opcional):</label>
+              <input type="text" id="audit-attachments" oninput="auditEmailContent()" placeholder="Ej. REMESAMAMANI.pdf, SF MORE.pdf, FILE LINARES.pdf" class="w-full text-xs font-mono bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
+            </div>
+
+            <button onclick="auditEmailContent()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <span>Ejecutar Diagnóstico IA</span>
+            </button>
+          </div>
+
+          <!-- Auditor Results Area -->
+          <div class="lg:col-span-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-600 uppercase">Resultado de Diagnóstico</span>
+              <span id="audit-badge-status" class="badge-rule bg-slate-100 text-slate-600 border border-slate-300">Esperando texto...</span>
+            </div>
+
+            <!-- Issues List -->
+            <div id="audit-issues-container" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 text-center">
+                Escribe o pega texto a la izquierda para iniciar la validación en tiempo real.
+              </div>
+            </div>
+
+            <!-- Auto-Correction Suggestion Box -->
+            <div id="audit-fix-box" class="hidden p-4 bg-indigo-50/70 border border-indigo-200 rounded-xl space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-indigo-900">✨ Corrección Sugerida por la IA:</span>
+                <button onclick="copyToClipboard(document.getElementById('audit-fixed-text').innerText, 'Texto corregido')" class="text-xs text-indigo-700 font-bold hover:underline">
+                  Copiar Corrección
+                </button>
+              </div>
+              <div id="audit-fixed-text" class="text-xs font-mono bg-white p-3 rounded-lg border border-indigo-200 text-slate-900 break-all select-all font-semibold">
+                --
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 4: CATÁLOGO DE ERRORES REALES          -->
+    <!-- ========================================== -->
+    <div id="view-casos" class="tab-view hidden space-y-6">
+      
+      <div>
+        <h2 class="text-lg font-bold text-slate-900">Casos Reales Extraídos de las Evaluaciones</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Analiza los casos concretos documentados en la presentación VF 13-10 donde el bot/IA rechazó o interpretó erróneamente los expedientes.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Caso 1: More Nole Violeta -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="bg-rose-50 border-b border-rose-100 px-5 py-3 flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-800">CASO 1: MORE NOLE, VIOLETA FABIOLA</span>
+            <span class="text-[10px] bg-rose-200 text-rose-900 px-2 py-0.5 rounded font-bold">RECHAZO IA</span>
+          </div>
+          <div class="p-5 flex-1 space-y-3 text-xs">
+            <div>
+              <span class="font-bold text-slate-700">Errores cometidos en el correo:</span>
+              <ul class="list-disc list-inside mt-1 space-y-1 text-slate-600">
+                <li><span class="text-rose-600 font-semibold">TIPO DE CRÉDITO:</span> Declararon <code class="bg-rose-50 text-rose-700 px-1 py-0.5 rounded">SUBROGADO</code> (No existe en el catálogo IA).</li>
+                <li><span class="text-rose-600 font-semibold">COMENTARIOS:</span> Escribieron <code class="bg-rose-50 text-rose-700 px-1 py-0.5 rounded">00444 SCOTIABANK</code> (Falta el separador estándar con guión).</li>
+              </ul>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1">
+              <span class="font-bold text-emerald-900">Corrección Reglamentaria:</span>
+              <p class="text-slate-700">TIPO DE CRÉDITO debe ser <strong class="text-emerald-700">COMPRA DE DEUDA</strong>.</p>
+              <p class="text-slate-700">COMENTARIOS debe redactarse: <code class="bg-white px-1.5 py-0.5 rounded border border-emerald-300 font-bold">00444 - Scotiabank</code>.</p>
+            </div>
+          </div>
+          <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 text-[11px] text-slate-500">
+            Asunto correcto: <code>Remesa – Provincia – PNP – MORE NOLE, VIOLETA FABIOLA – 70140510</code>
+          </div>
+        </div>
+
+        <!-- Caso 2: Mamani Coyla Naldy -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="bg-rose-50 border-b border-rose-100 px-5 py-3 flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-800">CASO 2: MAMANI COYLA NALDY FIORELA</span>
+            <span class="text-[10px] bg-rose-200 text-rose-900 px-2 py-0.5 rounded font-bold">FALLA DE COMENTARIOS</span>
+          </div>
+          <div class="p-5 flex-1 space-y-3 text-xs">
+            <div>
+              <span class="font-bold text-slate-700">Errores cometidos en el correo:</span>
+              <ul class="list-disc list-inside mt-1 space-y-1 text-slate-600">
+                <li><span class="text-rose-600 font-semibold">TIPO DE CRÉDITO:</span> Declararon <code class="bg-rose-50 text-rose-700 px-1 py-0.5 rounded">PRÉSTAMO NUEVO</code>.</li>
+                <li><span class="text-rose-600 font-semibold">COMENTARIOS:</span> Repitieron <code class="bg-rose-50 text-rose-700 px-1 py-0.5 rounded">PRÉSTAMO NUEVO</code>.</li>
+              </ul>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1">
+              <span class="font-bold text-emerald-900">Corrección Reglamentaria:</span>
+              <p class="text-slate-700">TIPO DE CRÉDITO debe ser <strong class="text-emerald-700">LIBRE DISPONIBILIDAD</strong>.</p>
+              <p class="text-slate-700">COMENTARIOS para operaciones nuevas debe ser obligatoriamente: <code class="bg-white px-1.5 py-0.5 rounded border border-emerald-300 font-bold">0 - Nuevo</code>.</p>
+            </div>
+          </div>
+          <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 text-[11px] text-slate-500">
+            DNI cliente: <code>71864212</code> | Monto: S/ 65,000.00 | Cuota: S/ 1280.28
+          </div>
+        </div>
+
+        <!-- Caso 3: Ruiz Silva Leydi Yuritza -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="bg-rose-50 border-b border-rose-100 px-5 py-3 flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-800">CASO 3: RUIZ SILVA LEYDI YURITZA</span>
+            <span class="text-[10px] bg-rose-200 text-rose-900 px-2 py-0.5 rounded font-bold">ERROR COMENTARIOS "0"</span>
+          </div>
+          <div class="p-5 flex-1 space-y-3 text-xs">
+            <div>
+              <span class="font-bold text-slate-700">Errores cometidos en el correo:</span>
+              <ul class="list-disc list-inside mt-1 space-y-1 text-slate-600">
+                <li><span class="text-rose-600 font-semibold">COMENTARIOS:</span> Escribieron solo <code class="bg-rose-50 text-rose-700 px-1 py-0.5 rounded">0</code> sin la etiqueta complementaria.</li>
+                <li>Convenio: DIRIS LC (Correcto). Tipo: LIBRE DISPONIBILIDAD (Correcto).</li>
+              </ul>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1">
+              <span class="font-bold text-emerald-900">Corrección Reglamentaria:</span>
+              <p class="text-slate-700">El algoritmo de IA requiere la cadena completa exacta: <code class="bg-white px-1.5 py-0.5 rounded border border-emerald-300 font-bold">0 - Nuevo</code>.</p>
+            </div>
+          </div>
+          <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 text-[11px] text-slate-500">
+            Asunto: <code>REMESA DIRIS LC - RUIZ SILVA LEYDI YURITZA - DNI 47223407</code> (Debe cambiarse a guión largo con espacios).
+          </div>
+        </div>
+
+        <!-- Caso 4: Sanchez Arevalo Geni Jhoel (File Desembolso) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="bg-rose-50 border-b border-rose-100 px-5 py-3 flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-800">CASO 4: SANCHEZ AREVALO GENI JHOEL</span>
+            <span class="text-[10px] bg-rose-200 text-rose-900 px-2 py-0.5 rounded font-bold">SLASHES // PROHIBIDOS</span>
+          </div>
+          <div class="p-5 flex-1 space-y-3 text-xs">
+            <div>
+              <span class="font-bold text-slate-700">Errores cometidos en el correo:</span>
+              <ul class="list-disc list-inside mt-1 space-y-1 text-slate-600">
+                <li><span class="text-rose-600 font-semibold">ASUNTO:</span> <code class="bg-rose-50 text-rose-700 px-1 py-0.5 rounded">FILE DESEMBOLSO // PROVINCIA // PNP // SANCHEZ... // DNI: 70901798</code></li>
+                <li>El uso del token <code>//</code> o la palabra <code>DNI:</code> bloquea la extracción automática de variables.</li>
+              </ul>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1">
+              <span class="font-bold text-emerald-900">Corrección Reglamentaria:</span>
+              <p class="text-slate-700">Cambiar absolutamente todos los separadores a guión:</p>
+              <code class="bg-white p-1 rounded border border-emerald-300 font-mono block text-[11px] font-bold text-emerald-800">File Desembolso – Provincia – PNP – SANCHEZ AREVALO GENI JHOEL – 70901798</code>
+            </div>
+          </div>
+          <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 text-[11px] text-slate-500">
+            Adjuntos requeridos: <code>SF SANCHEZ AREVALO.pdf</code> y <code>FILE SANCHEZ AREVALO.pdf</code>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>
+        <span>Manual Operativo de Convenios Públicos © VF 13-10 • Adaptador IA</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span>Normativa: 1 PDF en Remesa • 2 PDFs en Desembolso</span>
+        <span class="text-slate-300">|</span>
+        <span class="text-indigo-600 font-medium">Guión como Token Separador</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT APPLICATION LOGIC               -->
+  <!-- ========================================== -->
+  <script>
+    // Tab Switching Functionality
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeView = document.getElementById(`view-${tabId}`);
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+
+      if (activeView && activeBtn) {
+        activeView.classList.remove('hidden');
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('text-slate-400');
+      }
+
+      if (tabId === 'file') {
+        updateFileLive();
+      }
+    }
+
+    // Input DNI validator
+    function validateDNI(inputElem) {
+      inputElem.value = inputElem.value.replace(/[^0-9]/g, '');
+      const warn = document.getElementById('remesa-dni-warn');
+      if (warn) {
+        if (inputElem.value.length > 0 && inputElem.value.length !== 8) {
+          warn.classList.remove('hidden');
+        } else {
+          warn.classList.add('hidden');
+        }
+      }
+    }
+
+    // Remesa: Set Quick Comment
+    function setComentario(val) {
+      document.getElementById('remesa-comentarios').value = val;
+      updateRemesaLive();
+    }
+
+    // Handle Tipo Credito change
+    function handleTipoCreditoChange() {
+      const tipo = document.getElementById('remesa-tipo').value;
+      const comentarios = document.getElementById('remesa-comentarios');
+      if (tipo === 'LIBRE DISPONIBILIDAD' && (!comentarios.value || comentarios.value.includes('BANCO'))) {
+        comentarios.value = '0 - Nuevo';
+      }
+    }
+
+    // Remesa Live Updates
+    function updateRemesaLive() {
+      const zona = document.getElementById('remesa-zona').value;
+      let convenio = document.getElementById('remesa-convenio').value;
+      const convenioCustomWrap = document.getElementById('remesa-convenio-custom-wrap');
+
+      if (convenio === 'OTRO') {
+        convenioCustomWrap.classList.remove('hidden');
+        convenio = document.getElementById('remesa-convenio-custom').value.trim() || 'CONVENIO';
+      } else {
+        convenioCustomWrap.classList.add('hidden');
+      }
+
+      const cliente = (document.getElementById('remesa-cliente').value.trim() || 'NOMBRE DEL CLIENTE').toUpperCase();
+      const doc = document.getElementById('remesa-doc').value.trim() || '00000000';
+      const monto = document.getElementById('remesa-monto').value.trim() || '0.00';
+      const plazo = document.getElementById('remesa-plazo').value.trim() || '0';
+      const cuota = document.getElementById('remesa-cuota').value.trim() || '0.00';
+      const tipo = document.getElementById('remesa-tipo').value;
+      const seguro = document.getElementById('remesa-seguro').value;
+      const comentarios = document.getElementById('remesa-comentarios').value.trim() || '0 - Nuevo';
+      const vendedor = (document.getElementById('remesa-vendedor').value.trim() || 'VENDEDOR').toUpperCase();
+      const adicionales = document.getElementById('remesa-adicionales').value.trim();
+
+      // Official Subject: Remesa – [Lima o Provincia] – [Convenio] – [Nombre del Cliente] – [DNI del cliente]
+      const cleanZona = (zona.toLowerCase().includes('lima')) ? 'Lima' : 'Provincia';
+      const subject = `Remesa – ${cleanZona} – ${convenio} – ${cliente} – ${doc}`;
+      document.getElementById('remesa-subject-preview').innerText = subject;
+
+      // Update table cells
+      document.getElementById('td-remesa-cliente').innerText = cliente;
+      document.getElementById('td-remesa-doc').innerText = doc;
+      document.getElementById('td-remesa-monto').innerText = monto.startsWith('S/') ? monto : `S/ ${monto}`;
+      document.getElementById('td-remesa-plazo').innerText = plazo;
+      document.getElementById('td-remesa-cuota').innerText = cuota.startsWith('S/') ? cuota : `S/ ${cuota}`;
+      document.getElementById('td-remesa-convenio').innerText = convenio;
+      document.getElementById('td-remesa-tipo').innerText = tipo;
+      document.getElementById('td-remesa-seguro').innerText = seguro;
+      document.getElementById('td-remesa-comentarios').innerText = comentarios;
+      document.getElementById('td-remesa-vendedor').innerText = vendedor;
+
+      // Extra note outside table
+      const noteWrap = document.getElementById('remesa-extra-note-wrap');
+      const noteText = document.getElementById('remesa-extra-note');
+      if (adicionales) {
+        noteWrap.classList.remove('hidden');
+        noteText.innerText = `Nota adicional fuera de tabla: ${adicionales}`;
+      } else {
+        noteWrap.classList.add('hidden');
+        noteText.innerText = '';
+      }
+    }
+
+    // Fill Example Data for Remesa
+    function fillExampleRemesa() {
+      document.getElementById('remesa-zona').value = 'Provincia';
+      document.getElementById('remesa-convenio').value = 'PNP';
+      document.getElementById('remesa-cliente').value = 'GOMEZ MALPICA FRANCIS ENRIQUE';
+      document.getElementById('remesa-doc').value = '70227700';
+      document.getElementById('remesa-monto').value = '83,000';
+      document.getElementById('remesa-plazo').value = '72';
+      document.getElementById('remesa-cuota').value = '1,634.14';
+      document.getElementById('remesa-tipo').value = 'COMPRA DE DEUDA';
+      document.getElementById('remesa-seguro').value = 'CONVENCIONAL';
+      document.getElementById('remesa-comentarios').value = '110 - BANCO DE COMERCIO + 500 - BCO DE LA NACION';
+      document.getElementById('remesa-vendedor').value = 'ROBERTO HUAYTA';
+      document.getElementById('remesa-adicionales').value = 'Se anexa cronograma de pagos referencial.';
+      updateRemesaLive();
+      showToast('Datos de ejemplo cargados.');
+    }
+
+    // ==========================================
+    // File de Desembolso Live Controller
+    // ==========================================
+    let excepcionCount = 0;
+
+    function updateFileLive() {
+      const zona = document.getElementById('file-zona').value;
+      const convenio = document.getElementById('file-convenio').value;
+      const cliente = (document.getElementById('file-cliente').value.trim() || 'CLIENTE').toUpperCase();
+      const doc = document.getElementById('file-doc').value.trim() || '00000000';
+
+      // Subject format: File Desembolso – [Lima o Provincia] – [Convenio] – [Nombre del Cliente] – [DNI del cliente]
+      const subject = `File Desembolso – ${zona} – ${convenio} – ${cliente} – ${doc}`;
+      document.getElementById('file-subject-preview').innerText = subject;
+
+      // Attachment 1 (Salesforce): Must contain SF
+      const cleanShortName = cliente.split(' ').slice(0, 2).join(' ') || cliente;
+      document.getElementById('file-pdf-sf').value = `SF ${cleanShortName}.pdf`;
+
+      // Attachment 2 (Fiscalización): Must start with FILE
+      document.getElementById('file-pdf-fisc').value = `FILE ${cleanShortName}.pdf`;
+    }
+
+    function addExcepcionInput() {
+      excepcionCount++;
+      const container = document.getElementById('excepciones-list');
+      const div = document.createElement('div');
+      div.className = "flex items-center space-x-2";
+      div.id = `excep-item-${excepcionCount}`;
+      div.innerHTML = `
+        <span class="font-mono text-amber-800 font-bold whitespace-nowrap">EXCEPCION ${excepcionCount}</span>
+        <input type="text" value="EXCEPCION ${excepcionCount} SUSTENTO ADICIONAL.pdf" readonly class="w-full text-xs bg-white border border-slate-300 rounded px-2 py-1 font-mono text-slate-800">
+        <button onclick="copyToClipboard('EXCEPCION ${excepcionCount} SUSTENTO ADICIONAL.pdf', 'Nombre excepción')" class="text-xs bg-slate-200 px-2 py-1 rounded hover:bg-slate-300">📋</button>
+        <button onclick="removeExcepcion(${excepcionCount})" class="text-xs text-rose-600 hover:text-rose-800 font-bold px-1">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeExcepcion(id) {
+      const elem = document.getElementById(`excep-item-${id}`);
+      if (elem) elem.remove();
+    }
+
+    function fillExampleFile() {
+      document.getElementById('file-zona').value = 'Provincia';
+      document.getElementById('file-convenio').value = 'PNP';
+      document.getElementById('file-cliente').value = 'JORGE ANDRE LINARES PORTUGAL';
+      document.getElementById('file-doc').value = '46559043';
+      updateFileLive();
+      showToast('Ejemplo de File Desembolso cargado.');
+    }
+
+    // ==========================================
+    // Auditor Engine
+    // ==========================================
+    function auditEmailContent() {
+      const text = document.getElementById('audit-input').value;
+      const attachments = document.getElementById('audit-attachments').value;
+      const issuesContainer = document.getElementById('audit-issues-container');
+      const fixBox = document.getElementById('audit-fix-box');
+      const fixedTextElem = document.getElementById('audit-fixed-text');
+      const statusBadge = document.getElementById('audit-badge-status');
+
+      if (!text.trim() && !attachments.trim()) {
+        issuesContainer.innerHTML = '<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 text-center">Escribe o pega texto para auditar en vivo.</div>';
+        fixBox.classList.add('hidden');
+        statusBadge.className = 'badge-rule bg-slate-100 text-slate-600 border border-slate-300';
+        statusBadge.innerText = 'Esperando texto...';
+        return;
+      }
+
+      const issues = [];
+      let correctedText = text;
+
+      // 1. Detect Slashes '//'
+      if (text.includes('//')) {
+        issues.push({
+          type: 'error',
+          title: 'Separador prohibido: Doble Barra (//)',
+          desc: 'La IA no puede interpretar las barras. El delimitador obligatorio entre campos es el GUIÓN largo ("–").',
+          fix: 'Reemplazar "//" por "–"'
+        });
+        correctedText = correctedText.replace(/\s*\/\/\s*/g, ' – ');
+      }
+
+      // 2. Detect prefix "DNI:" in subject
+      if (/DNI:\s*([0-9]{8})/i.test(text)) {
+        issues.push({
+          type: 'error',
+          title: 'Prefijo redundante "DNI:" detectado',
+          desc: 'No coloque la palabra "DNI:" antes del número de documento. La IA lee el último campo numérico directamente.',
+          fix: 'Eliminar "DNI:" y dejar solo los 8 dígitos.'
+        });
+        correctedText = correctedText.replace(/DNI:\s*([0-9]{8})/gi, '$1');
+      }
+
+      // 3. Prohibited Credit Types
+      const forbiddenCredits = ['SUBROGADO', 'PRÉSTAMO NUEVO', 'PRESTAMO NUEVO', 'LINEA NUEVA', 'LÍNEA NUEVA', 'NUEVO'];
+      forbiddenCredits.forEach(badCredit => {
+        const regex = new RegExp(`\\b${badCredit}\\b`, 'gi');
+        if (regex.test(text)) {
+          let suggestion = 'LIBRE DISPONIBILIDAD';
+          if (badCredit.toUpperCase().includes('SUBROGADO')) suggestion = 'COMPRA DE DEUDA';
+          issues.push({
+            type: 'error',
+            title: `Tipo de crédito no permitido: "${badCredit}"`,
+            desc: `Solo existen 3 opciones válidas para la IA: "Compra de deuda", "Ampliación" o "Libre disponibilidad".`,
+            fix: `Cambiar a "${suggestion}"`
+          });
+          correctedText = correctedText.replace(regex, suggestion);
+        }
+      });
+
+      // 4. Incomplete Comments "0" or "LINEA NUEVA" in comments
+      if (/\bCOMENTARIOS[:\s]+0\b/i.test(text) && !/0\s*-\s*Nuevo/i.test(text)) {
+        issues.push({
+          type: 'warning',
+          title: 'Comentario incompleto: solo figura "0"',
+          desc: 'Para créditos nuevos, la instrucción exacta exige colocar "0 - Nuevo" (con guión y la palabra Nuevo).',
+          fix: 'Escribir "0 - Nuevo"'
+        });
+        correctedText = correctedText.replace(/COMENTARIOS[:\s]+0(?!\s*-\s*Nuevo)/gi, 'COMENTARIOS: 0 - Nuevo');
+      }
+
+      // 5. Audit attachments if provided
+      if (attachments.trim()) {
+        const fileNames = attachments.split(',').map(s => s.trim());
+        let hasSF = fileNames.some(f => /SF/i.test(f));
+        let hasFILE = fileNames.some(f => /^FILE/i.test(f));
+
+        if (fileNames.length > 1 && (!hasSF || !hasFILE)) {
+          issues.push({
+            type: 'warning',
+            title: 'Nombres de adjuntos para File de Desembolso no conformes',
+            desc: 'Uno de los PDFs debe incluir "SF" (para Salesforce) y el otro debe iniciar estrictamente con "FILE" (para fiscalización).',
+            fix: 'Renombrar según: "SF [CLIENTE].pdf" y "FILE [CLIENTE].pdf"'
+          });
+        }
+      }
+
+      // Render Issues
+      issuesContainer.innerHTML = '';
+      if (issues.length === 0) {
+        statusBadge.className = 'badge-rule bg-emerald-100 text-emerald-800 border border-emerald-300';
+        statusBadge.innerText = '✓ Formato 100% Conforme';
+        issuesContainer.innerHTML = `
+          <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 space-y-1">
+            <p class="font-bold flex items-center"><svg class="w-4 h-4 mr-1 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Excelente</p>
+            <p>No se encontraron errores de tokenización, barras prohibidas ni tipos de crédito inválidos.</p>
+          </div>
+        `;
+        fixBox.classList.add('hidden');
+      } else {
+        statusBadge.className = 'badge-rule bg-rose-100 text-rose-800 border border-rose-300';
+        statusBadge.innerText = `✗ ${issues.length} Observación(es) detectada(s)`;
+
+        issues.forEach(issue => {
+          const card = document.createElement('div');
+          const isErr = issue.type === 'error';
+          card.className = `p-3 rounded-xl border text-xs space-y-1 ${isErr ? 'bg-rose-50/80 border-rose-200' : 'bg-amber-50 border-amber-200'}`;
+          card.innerHTML = `
+            <div class="flex items-center justify-between font-bold ${isErr ? 'text-rose-900' : 'text-amber-900'}">
+              <span>${isErr ? '⛔' : '⚠️'} ${issue.title}</span>
+              <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white border">${issue.fix}</span>
+            </div>
+            <p class="${isErr ? 'text-rose-800' : 'text-amber-800'} text-[11px]">${issue.desc}</p>
+          `;
+          issuesContainer.appendChild(card);
+        });
+
+        fixBox.classList.remove('hidden');
+        fixedTextElem.innerText = correctedText.trim();
+      }
+    }
+
+    function loadBadAuditSample(sampleId) {
+      if (sampleId === 1) {
+        document.getElementById('audit-input').value = `FILE DESEMBOLSO // PROVINCIA // PNP // SANCHEZ AREVALO GENI JHOEL // DNI: 70901798\n\nEstimados,\nSe remite expediente con cuota sincerada.`;
+        document.getElementById('audit-attachments').value = `FILE AC SANCHEZ.pdf, FILE SF SANCHEZ.pdf`;
+      } else {
+        document.getElementById('audit-input').value = `Remesa – Lima – PNP – MORE NOLE VIOLETA – 70140510\n\nTIPO DE CREDITO: SUBROGADO\nCOMENTARIOS: 00444 SCOTIABANK`;
+        document.getElementById('audit-attachments').value = ``;
+      }
+      auditEmailContent();
+    }
+
+    // ==========================================
+    // Clipboard Utility Helpers
+    // ==========================================
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const msgElem = document.getElementById('toast-msg');
+      msgElem.innerText = message;
+      toast.classList.remove('opacity-0', 'translate-y-20');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-20');
+      }, 2500);
+    }
+
+    function copyToClipboard(text, entityName = 'Contenido') {
+      const tempInput = document.createElement('textarea');
+      tempInput.value = text;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+        showToast(`${entityName} copiado al portapapeles.`);
+      } catch (err) {
+        console.error('Error copying text', err);
+      }
+      document.body.removeChild(tempInput);
+    }
+
+    function copyRichTable(containerId) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast('Tabla con formato lista para pegar en Outlook.');
+        }
+      } catch (err) {
+        console.error('Copy table failed', err);
+      }
+      sel.removeAllRanges();
+    }
+
+    function copyFullRemesaEmail() {
+      const subject = document.getElementById('remesa-subject-preview').innerText;
+      const cliente = document.getElementById('td-remesa-cliente').innerText;
+      const doc = document.getElementById('td-remesa-doc').innerText;
+      const monto = document.getElementById('td-remesa-monto').innerText;
+      const plazo = document.getElementById('td-remesa-plazo').innerText;
+      const cuota = document.getElementById('td-remesa-cuota').innerText;
+      const convenio = document.getElementById('td-remesa-convenio').innerText;
+      const tipo = document.getElementById('td-remesa-tipo').innerText;
+      const seguro = document.getElementById('td-remesa-seguro').innerText;
+      const comentarios = document.getElementById('td-remesa-comentarios').innerText;
+      const vendedor = document.getElementById('td-remesa-vendedor').innerText;
+      const nota = document.getElementById('remesa-extra-note').innerText;
+
+      const fullText = `ASUNTO: ${subject}\n\nBuen día,\n\nEstimados, por favor su apoyo con solicitar remesa de cliente en mención.\nSe adjunta documentación y detalle del crédito:\n\nCLIENTE: ${cliente}\nDOC: ${doc}\nMONTO: ${monto}\nPLAZO: ${plazo}\nCUOTA: ${cuota}\nCONVENIO: ${convenio}\nTIPO DE CRÉDITO: ${tipo}\nSEGURO: ${seguro}\nCOMENTARIOS: ${comentarios}\nVENDEDOR: ${vendedor}\n\n${nota ? nota + '\n\n' : ''}(Adjunto: 1 solo PDF a validar)`;
+
+      copyToClipboard(fullText, 'Correo completo de Remesa');
+    }
+
+    // Initialize application on page load
+    window.onload = function() {
+      updateRemesaLive();
+      updateFileLive();
+    };
+  </script>
+</body>
+</html>
