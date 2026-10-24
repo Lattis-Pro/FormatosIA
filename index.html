@@ -37,6 +37,10 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
+      /* Regla adicional para evitar la selección de texto */
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10 and IE 11 */
+      user-select: none; /* Standard syntax */
     }
     .table-email-preview th, .table-email-preview td {
       border: 1px solid #1f2937;
@@ -1195,6 +1199,38 @@
       updateRemesaLive();
       updateFileLive();
     };
+
+    // =========================================================
+    // PROTECCIÓN CONTRA CLIC DERECHO, F12 Y ATAJOS DE DEVTOOLS
+    // =========================================================
+    
+    // 1. Bloquear el clic derecho del mouse
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      showToast("Acción no permitida.");
+    });
+
+    // 2. Bloquear combinaciones de teclado específicas
+    document.addEventListener('keydown', function(e) {
+      // Bloquear la tecla F12
+      if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        showToast("Herramientas de desarrollo desactivadas.");
+      }
+      
+      // Bloquear Ctrl + Shift + I (Inspector), Ctrl + Shift + J (Consola), Ctrl + Shift + C
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+        e.preventDefault();
+        showToast("Acción no permitida.");
+      }
+      
+      // Bloquear Ctrl + U (Ver código fuente)
+      if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+        e.preventDefault();
+        showToast("Visualización de código fuente bloqueada.");
+      }
+    });
+
   </script>
 </body>
 </html>
